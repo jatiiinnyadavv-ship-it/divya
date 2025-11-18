@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>For My Princess ❤️</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: radial-gradient(circle at top, #ffdde1 0, #f8f4ef 45%, #ffe4f0 100%);
+    margin: 0;
+    color: #333;
+    overflow-x: hidden;
+  }
+
+  /* Gate screen */
+  #gate-screen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at top, #111827, #020617);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 900;
+    transition: opacity 0.8s ease;
+  }
+
+  .shake {
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) }
+    25% { transform: translateX(-5px) }
+    75% { transform: translateX(5px) }
+  }
+
+  /* Popup */
+  #popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.86);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 950;
+  }
+
+  .popup-box {
+    background: #fff;
+    padding: 24px 20px;
+    border-radius: 18px;
+    max-width: 320px;
+    text-align: center;
+    animation: pop 0.45s ease-out;
+  }
+  @keyframes pop {
+    from { transform: scale(0.6); opacity: 0 }
+    to { transform: scale(1); opacity: 1 }
+  }
+
+  /* Typewriter */
+  #typewriter {
+    white-space: nowrap;
+    border-right: 3px solid #fb7185;
+    overflow: hidden;
+    width: 0;
+    animation: typing 4s steps(50) forwards, blink 0.8s infinite;
+  }
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+  @keyframes blink {
+    50% { border-color: transparent }
+  }
+
+  /* Hearts */
+  .heart {
+    position: fixed;
+    font-size: 26px;
+    animation: floatUp 4s linear forwards;
+    color: #ff3366;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1 }
+    100% { transform: translateY(-160px); opacity: 0 }
+  }
+
+  /* Gallery images */
+  .gallery-img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+  }
+  @media (min-width: 640px) {
+    .gallery-img { height: 320px; }
+  }
+
+  /* Modal */
+  #img-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+  #img-modal img {
+    max-width: 92%;
+    max-height: 92%;
+    border-radius: 18px;
+  }
+
+  /* Fireflies */
+  .firefly {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 0 12px #fbbf24;
+    opacity: 0.7;
+    animation: fly 6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes fly {
+    0% { transform: translateY(0) translateX(0); opacity: 0 }
+    10% { opacity: 1 }
+    100% { transform: translateY(-180px) translateX(40px); opacity: 0 }
+  }
+
+  /* Slideshow */
+  #slideshow {
+    position: relative;
+    max-width: 360px;
+    margin: 0 auto 1.5rem auto;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  }
+  #slideshow img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: none;
+  }
+  #slideshow img.active {
+    display: block;
+    animation: fadeSlide 1s ease;
+  }
+  @keyframes fadeSlide {
+    from { opacity: 0 }
+    to { opacity: 1 }
+  }
+
+  /* Secret section */
+  #secret-section {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Background music (plays AFTER popup continue) -->
+<audio id="bgMusic" src="song.mp3" loop></audio>
+
+<!-- IMAGE MODAL -->
+<div id="img-modal" onclick="this.style.display='none'">
+  <img id="modal-img" alt="Photo">
+</div>
+
+<!-- GATE SCREEN -->
+<div id="gate-screen">
+  <h1 class="text-3xl sm:text-4xl font-extrabold text-pink-300 mb-2">
+    Ek chhota sa sawaal, meri princess ke liye 💖
+  </h1>
+  <p class="text-sm text-gray-300 mb-3 max-w-xs">
+    Jab tum sahi answer dogi, tab tumhe milega tumhara apna chhupaa hua world… only for you & me.
+  </p>
+  <input id="answer" class="p-3 w-60 text-center rounded-md text-black outline-none" placeholder="Type here..." autocomplete="off">
+  <p id="wrong" class="hidden text-red-400 text-xs font-semibold mt-1">
+    Ye nahi tha baby… dil se socho, calendar se nahi 🥺
+  </p>
+  <button id="unlockBtn" class="mt-2 bg-pink-600 px-8 py-2 rounded-full font-bold text-white shadow-lg hover:scale-105 transition">
+    Unlock ❤️
+  </button>
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-box">
+    <h2 class="text-2xl font-bold text-pink-600 mb-2">Happy Princess Day My Love 👑💖</h2>
+    <p class="text-sm mb-4">
+      From this moment, everything inside this page belongs only to you & me. No world, no log, bas hum. 💞
+    </p>
+    <button id="continueBtn" class="bg-pink-600 px-6 py-2 rounded-full text-white font-semibold hover:scale-105 transition">
+      Enjoy My Love ❤️
+    </button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content" class="hidden">
+
+  <!-- HERO -->
+  <section class="text-center text-white py-20 px-4" style="background: radial-gradient(circle at top, #020617 0, #111827 40%, #020617 100%);">
+    <p class="text-sm tracking-[.25em] uppercase text-pink-300 mb-2">Only For You</p>
+    <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">My Forever <span class="text-pink-400">Princess</span></h1>
+    <p id="typewriter" class="text-pink-200 text-base sm:text-lg mx-auto max-w-xl"></p>
+  </section>
+
+  <!-- PARA -->
+  <section class="py-14 text-center px-4">
+    <div class="bg-white max-w-3xl mx-auto p-8 rounded-2xl shadow-xl">
+      <h2 class="text-3xl text-pink-600 font-bold mb-4">From My Heart To You 💌</h2>
+      <p class="text-lg leading-relaxed">
+        Tum meri zindagi ka sabse sundar turning point ho. Us din se jab se tum meri life me aayi ho,
+        simple din bhi special ho gaye, normal baatein bhi yaad ban gayi. Tumhari hansi, tumhara “arey
+        pagle” kehna, tumhara care, sab itna real lagta hai ki kabhi kabhi lagta hai ye sab dream toh nahi.
+        Main perfect nahi ho sakta, lekin tumhare saath har galti bhi ek cute story ban jati hai. 
+        Bas itna jaanna, jitna pyaar tum aaj feel kar rahi ho, woh sirf start hai… baaki pura life baaki hai. 💖
+      </p>
+    </div>
+  </section>
+
+  <!-- SHAYARI -->
+  <section class="py-10 text-center px-4">
+    <div class="bg-[#fff0f5] max-w-2xl mx-auto p-6 rounded-2xl shadow-md border border-pink-200">
+      <p class="text-2xl italic font-semibold text-pink-700 leading-relaxed">
+        “Teri aankhon mein jo khwaab hai,<br>
+        unhi khwaabon ka main hissa ban na chahta hoon…<br>
+        Tu ruk jaa bas mere saath yahin,<br>
+        baaki duniya ko main khud sambhaal loonga.” 💘
+      </p>
+    </div>
+  </section>
+
+  <!-- SLIDESHOW -->
+  <section class="py-6 px-4 text-center">
+    <h2 class="text-xl font-semibold mb-3 text-pink-700">Slide Of My Favorite You 💫</h2>
+    <div id="slideshow">
+      <img src="pic1.jpg" class="active" alt="slide1">
+      <img src="pic2.jpg" alt="slide2">
+      <img src="pic3.jpg" alt="slide3">
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="py-10 px-4">
+    <h2 class="text-2xl font-bold text-center mb-6">Every Angle Of You Is Perfect 📸</h2>
+    <div class="max-w-4xl mx-auto grid sm:grid-cols-3 gap-6">
+      <img src="pic1.jpg" class="gallery-img" alt="pic1" onclick="openImg(this.src)">
+      <img src="pic2.jpg" class="gallery-img" alt="pic2" onclick="openImg(this.src)">
+      <img src="pic3.jpg" class="gallery-img" alt="pic3" onclick="openImg(this.src)">
+    </div>
+  </section>
+
+  <!-- SECRET BUTTON -->
+  <section class="py-6 text-center px-4">
+    <button id="secretBtn" class="bg-pink-600 text-white px-6 py-2 rounded-full font-semibold shadow-md hover:scale-105 transition">
+      Tap for one more surprise 💫
+    </button>
+  </section>
+
+  <!-- SECRET SECTION -->
+  <section id="secret-section" class="py-10 px-4">
+    <div class="max-w-3xl mx-auto bg-[#0f172a] text-pink-100 p-8 rounded-2xl shadow-xl border border-pink-500/40">
+      <h2 class="text-2xl font-bold text-pink-300 mb-4 text-center">Our Little Future List 📝</h2>
+      <ul class="text-left space-y-2 text-base">
+        <li>• Ek din bina kisi tension ke, sirf hum dono ka pura day out.</li>
+        <li>• Random late night walk, jahan tum sirf baatein karo aur main sirf sunu.</li>
+        <li>• Har birthday pe ek chhota ya big surprise, but always from me.</li>
+        <li>• Kabhi bhi ro dogi, to sabse pehle shoulder mera hi hoga.</li>
+        <li>• Aur ek din… jab tumhe “Princess” nahi, “Wife” bulaunga, woh sabse bada dream hoga. ❤️</li>
+      </ul>
+      <p class="mt-5 text-center text-pink-200 text-sm">
+        Screenshot this, because ye sirf promises nahi… future ke plans hain. 💍
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-[#020617] text-white text-center py-4 text-xs">
+    Made with a stupid amount of love, only for you ❤️
+  </footer>
+</div>
+
+<script>
+  // AUDIO
+  function playMusic() {
+    const music = document.getElementById("bgMusic");
+    music.play().catch(() => {});
+  }
+
+  // HEARTS
+  function heart() {
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.textContent = "❤️";
+    h.style.left = Math.random() * innerWidth + "px";
+    h.style.top = innerHeight + "px";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 4000);
+  }
+
+  // FIRELIES
+  function makeFirefly() {
+    const f = document.createElement("div");
+    f.className = "firefly";
+    f.style.left = Math.random() * innerWidth + "px";
+    f.style.top = innerHeight + "px";
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 6000);
+  }
+  setInterval(makeFirefly, 2000);
+
+  // TYPEWRITER
+  let twText = "You are not just my chapter… you’re my entire story, my comfort and my forever home. 💗";
+  let idx = 0;
+  function typeWriter() {
+    if (idx < twText.length) {
+      document.getElementById("typewriter").innerHTML += twText.charAt(idx);
+      idx++;
+      setTimeout(typeWriter, 60);
+    }
+  }
+
+  // IMAGE MODAL
+  function openImg(src) {
+    document.getElementById("modal-img").src = src;
+    document.getElementById("img-modal").style.display = "flex";
+  }
+  window.openImg = openImg; // expose for inline onclick
+
+  // SLIDESHOW
+  const slides = [];
+  window.addEventListener("load", () => {
+    const ss = document.querySelectorAll("#slideshow img");
+    ss.forEach(s => slides.push(s));
+    let current = 0;
+    setInterval(() => {
+      slides[current].classList.remove("active");
+      current = (current + 1) % slides.length;
+      slides[current].classList.add("active");
+    }, 2800);
+  });
+
+  // UNLOCK ANSWER
+  document.getElementById("unlockBtn").onclick = () => {
+    const val = document.getElementById("answer").value.trim().toLowerCase();
+    const answers = ["14 july","14july","14/07","14-07","july 14","14 jul"];
+    if (answers.some(a => val.includes(a))) {
+      document.getElementById("wrong").classList.add("hidden");
+      const gate = document.getElementById("gate-screen");
+      gate.style.opacity = "0";
+      setTimeout(() => {
+        gate.style.display = "none";
+        document.getElementById("popup").style.display = "flex";
+      }, 750);
+    } else {
+      const inp = document.getElementById("answer");
+      document.getElementById("wrong").classList.remove("hidden");
+      inp.classList.add("shake");
+      setTimeout(() => inp.classList.remove("shake"), 350);
+    }
+  };
+
+  // POPUP CONTINUE
+  document.getElementById("continueBtn").onclick = () => {
+    document.getElementById("popup").style.display = "none";
+    document.getElementById("main-content").classList.remove("hidden");
+    playMusic();
+    typeWriter();
+    setInterval(heart, 900);
+    confetti({ particleCount: 220, spread: 70, origin: { y: 0.9 } });
+  };
+
+  // SECRET BTN
+  document.getElementById("secretBtn").onclick = () => {
+    const sec = document.getElementById("secret-section");
+    sec.style.display = "block";
+    sec.scrollIntoView({ behavior: "smooth" });
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.3 } });
+  };
+</script>
+
+</body>
+</html>
